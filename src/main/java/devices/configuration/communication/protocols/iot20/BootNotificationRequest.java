@@ -1,5 +1,7 @@
 package devices.configuration.communication.protocols.iot20;
 
+import devices.configuration.communication.BootNotification;
+
 record BootNotificationRequest(
         Device device,
         Reason reason) {
@@ -25,5 +27,13 @@ record BootNotificationRequest(
         Triggered,
         Unknown,
         Watchdog
+    }
+
+    BootNotification toBootNotificationEvent(String deviceId) {
+        return new BootNotification(
+                deviceId, BootNotification.Protocols.IoT20,
+                device.vendorName, device.model,
+                device.serialNumber, device.firmwareVersion
+        );
     }
 }
