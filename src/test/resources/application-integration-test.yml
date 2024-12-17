@@ -7,5 +7,3 @@ spring:
     hibernate.ddl-auto: none
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     database: postgresql
-  liquibase:
-    dropFirst: true

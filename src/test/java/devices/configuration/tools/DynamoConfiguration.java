@@ -9,7 +9,7 @@ import org.testcontainers.utility.DockerImageName;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
-import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient;
+import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.AttributeDefinition;
 import software.amazon.awssdk.services.dynamodb.model.KeySchemaElement;
 import software.amazon.awssdk.services.dynamodb.model.KeyType;
@@ -24,13 +24,13 @@ class DynamoConfiguration {
     private GenericContainer<?> dynamoDB;
 
     @Bean
-    DynamoDbAsyncClient client() throws ExecutionException, InterruptedException {
+    DynamoDbClient client() throws ExecutionException, InterruptedException {
         dynamoDB = new GenericContainer<>(DockerImageName.parse("amazon/dynamodb-local:2.5.3"))
                 .withReuse(true)
                 .withExposedPorts(8000);
         dynamoDB.start();
         var endpointUri = STR."http://\{dynamoDB.getHost()}:\{dynamoDB.getMappedPort(8000)}";
-        DynamoDbAsyncClient client = DynamoDbAsyncClient.builder()
+        DynamoDbClient client = DynamoDbClient.builder()
                 .endpointOverride(URI.create(endpointUri))
                 .region(Region.US_EAST_1)
                 .credentialsProvider(StaticCredentialsProvider
@@ -49,8 +49,8 @@ class DynamoConfiguration {
         }
     }
 
-    private static void createConfigTable(DynamoDbAsyncClient client) throws InterruptedException, ExecutionException {
-        client.deleteTable(table -> table.tableName("Config")).get();
+    private static void createConfigTable(DynamoDbClient client) {
+        client.deleteTable(table -> table.tableName("Config"));
         client.createTable(table -> table
                 .tableName("Config")
                 .keySchema(KeySchemaElement.builder()
@@ -66,7 +66,6 @@ class DynamoConfiguration {
                 ).provisionedThroughput(thru -> thru
                         .readCapacityUnits(5L)
                         .writeCapacityUnits(5L))
-        ).get();
+        );
     }
-
 }

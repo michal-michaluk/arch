@@ -11,6 +11,7 @@ spring:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     open-in-view: false
   liquibase:
+    enabled: false
     change-log: classpath:db/db.changelog.yaml
   kafka.consumer:
     group-id: devices-configuration-default

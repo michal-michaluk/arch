@@ -15,6 +15,10 @@ record IntervalRules(
         List<ModelRule> byModel,
         int defSeconds) {
 
+    static IntervalRules defaultRules() {
+        return new IntervalRules(List.of(), List.of(), 1800);
+    }
+
     Duration calculateInterval(BootNotification boot) {
         return Duration.ofSeconds(Stream.of(byIds, byModel)
                 .flatMap(Collection::stream)

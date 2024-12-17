@@ -39,6 +39,7 @@ dependencies {
     implementation "io.hypersistence:hypersistence-utils-hibernate-63:3.8.2"
     implementation "com.zaxxer:HikariCP:6.2.1"
     implementation "org.liquibase:liquibase-core:4.30.0"
+    implementation("software.amazon.awssdk:dynamodb:2.29.33")
 
     //Tests
     testImplementation "org.springframework.security:spring-security-test"
