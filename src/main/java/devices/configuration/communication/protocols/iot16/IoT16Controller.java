@@ -28,4 +28,11 @@ class IoT16Controller {
                 );
     }
 
+    @PostMapping(path = "/protocols/iot16/statusnotification/{deviceId}",
+            consumes = "application/json", produces = "application/json")
+    void handleStatusNotification(@PathVariable String deviceId,
+                                  @RequestBody StatusNotificationRequest request) {
+        service.handleStatus(request.toStatusNotificationEvent(deviceId));
+    }
+
 }

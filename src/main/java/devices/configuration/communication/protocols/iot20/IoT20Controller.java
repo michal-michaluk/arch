@@ -27,4 +27,11 @@ class IoT20Controller {
                         .build()
                 );
     }
+
+    @PostMapping(path = "/protocols/iot20/statusnotification/{deviceId}",
+            consumes = "application/json", produces = "application/json")
+    void handleStatusNotification(@PathVariable String deviceId,
+                                  @RequestBody StatusNotificationRequest request) {
+        service.handleStatus(request.toStatusNotificationEvent(deviceId));
+    }
 }

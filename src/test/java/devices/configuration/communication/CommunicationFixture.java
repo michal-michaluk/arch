@@ -2,6 +2,8 @@ package devices.configuration.communication;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
+
 import static devices.configuration.communication.BootNotification.Protocols.IoT16;
 
 public class CommunicationFixture {
@@ -21,4 +23,11 @@ public class CommunicationFixture {
         return boot().deviceId(deviceId).build();
     }
 
+    @NotNull
+    public static DeviceStatuses statuses(String deviceId) {
+        return new DeviceStatuses(deviceId, List.of(
+                "Available",
+                "Faulted"
+        ));
+    }
 }

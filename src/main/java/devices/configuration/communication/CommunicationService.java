@@ -24,6 +24,9 @@ public class CommunicationService {
         );
     }
 
+    public void handleStatus(DeviceStatuses status) {
+    }
+
     public record BootResponse(Instant serverTime, Duration interval) {
 
         public <T> T map(Function<BootResponse, T> func) {
