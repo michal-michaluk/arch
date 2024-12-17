@@ -1,0 +1,26 @@
+databaseChangeLog:
+
+  - changeSet:
+      id: fee91d65-5b79-40e2-a473-a241dc2be972
+      author: michal.michaluk
+      changes:
+        - createTable:
+            tableName: config
+            columns:
+              - column:
+                  name: name
+                  type: varchar(255)
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: version
+                  type: int
+                  defaultValue: 1
+                  constraints:
+                    nullable: false
+              - column:
+                  name: configuration
+                  type: jsonb
+                  constraints:
+                    nullable: false
