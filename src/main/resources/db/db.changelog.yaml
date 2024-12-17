@@ -24,3 +24,109 @@ databaseChangeLog:
                   type: jsonb
                   constraints:
                     nullable: false
+
+  - changeSet:
+      comment: relevant only for demonstration of DeviceNormalizingRepository
+      id: c723eaaa-8f6c-465f-b2ee-cc3881242a6a
+      author: michal.michaluk
+      changes:
+        - createTable:
+            tableName: normalized_device
+            columns:
+              - column:
+                  name: device_id
+                  type: varchar(255)
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: version
+                  type: int
+                  defaultValue: 1
+                  constraints:
+                    nullable: false
+              - column:
+                  name: operator
+                  type: varchar(255)
+              - column:
+                  name: provider
+                  type: varchar(255)
+              - column:
+                  name: street
+                  type: varchar(255)
+              - column:
+                  name: house_number
+                  type: varchar(255)
+              - column:
+                  name: city
+                  type: varchar(255)
+              - column:
+                  name: postal_code
+                  type: varchar(255)
+              - column:
+                  name: state
+                  type: varchar(255)
+              - column:
+                  name: country
+                  type: varchar(255)
+              - column:
+                  name: longitude
+                  type: numeric(18, 15)
+              - column:
+                  name: latitude
+                  type: numeric(18, 15)
+              - column:
+                  name: auto_start
+                  type: boolean
+              - column:
+                  name: remote_control
+                  type: boolean
+              - column:
+                  name: billing
+                  type: boolean
+              - column:
+                  name: reimbursement
+                  type: boolean
+              - column:
+                  name: show_on_map
+                  type: boolean
+              - column:
+                  name: public_access
+                  type: boolean
+        - createTable:
+            tableName: normalized_opening
+            columns:
+              - column:
+                  name: id
+                  type: serial
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: device_id
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_normalized_device
+                    references: normalized_device(device_id)
+              - column:
+                  name: day_of_week
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: open24h
+                  type: boolean
+                  constraints:
+                    nullable: false
+              - column:
+                  name: closed
+                  type: boolean
+                  constraints:
+                    nullable: false
+              - column:
+                  name: open
+                  type: smallint
+              - column:
+                  name: close
+                  type: smallint
