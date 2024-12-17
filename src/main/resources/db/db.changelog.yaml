@@ -24,3 +24,62 @@ databaseChangeLog:
                   type: jsonb
                   constraints:
                     nullable: false
+
+  - changeSet:
+      id: 6a47fffc-a97f-4e6a-b37d-22945a26d39a
+      author: michal.michaluk
+      changes:
+        - createTable:
+            tableName: device_document
+            columns:
+              - column:
+                  name: device_id
+                  type: varchar(255)
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: version
+                  type: int
+                  defaultValue: 1
+                  constraints:
+                    nullable: false
+              - column:
+                  name: device
+                  type: jsonb
+                  constraints:
+                    nullable: false
+
+  - changeSet:
+      id: 29dfd3d3-47e1-4afa-b80d-74f6727544fc
+      author: michal.michaluk
+      changes:
+        - createTable:
+            tableName: device_events
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: device_id
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: type
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: time
+                  type: timestamp without time zone
+                  constraints:
+                    nullable: false
+              - column:
+                  name: event
+                  type: jsonb
+                  constraints:
+                    nullable: false

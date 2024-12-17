@@ -5,11 +5,14 @@ import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.databind.introspect.AnnotatedClassResolver;
+import com.fasterxml.jackson.databind.jsontype.NamedType;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
 import io.hypersistence.utils.hibernate.type.util.ObjectMapperSupplier;
+import jakarta.annotation.PostConstruct;
 import org.springframework.boot.jackson.JsonComponent;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -17,8 +20,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.ANY;
 
@@ -52,6 +59,23 @@ public class JsonConfiguration implements ObjectMapperSupplier {
     @Override
     public ObjectMapper get() {
         return OBJECT_MAPPER;
+    }
+
+    @PostConstruct
+    private void initEventTypes() {
+        DeserializationConfig config = OBJECT_MAPPER.getDeserializationConfig();
+        AnnotationIntrospector ai = config.getAnnotationIntrospector();
+        Map<Class<?>, EventTypes.Type> subtypes = Stream.of(
+                        devices.configuration.device.DomainEvent.class
+                )
+                .map(type -> AnnotatedClassResolver.resolve(config, OBJECT_MAPPER.constructType(type), config))
+                .map(ai::findSubtypes)
+                .flatMap(Collection::stream)
+                .collect(Collectors.toMap(
+                        NamedType::getType,
+                        type -> EventTypes.Type.of(type.getName())
+                ));
+        EventTypes.init(subtypes);
     }
 
     public static <T> T parse(String json, Class<T> type) {
