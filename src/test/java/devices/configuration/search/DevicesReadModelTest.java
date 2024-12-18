@@ -20,11 +20,14 @@ class DevicesReadModelTest {
 
     @Autowired
     DevicesReadModel projection;
+    @Autowired
+    DevicesReadModel.DeviceReadsRepository jpa;
 
     final String deviceId = "fixed-device-id";
 
     @BeforeEach
     void setUp() {
+        jpa.deleteAll();
     }
 
     @Test

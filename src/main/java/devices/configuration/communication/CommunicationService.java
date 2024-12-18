@@ -2,6 +2,7 @@ package devices.configuration.communication;
 
 import devices.configuration.intervals.IntervalsService;
 import lombok.AllArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,8 +17,10 @@ import java.util.function.Function;
 public class CommunicationService {
     private final Clock clock;
     private final IntervalsService intervals;
+    private final ApplicationEventPublisher publisher;
 
     public BootResponse handleBoot(BootNotification boot) {
+        publisher.publishEvent(boot);
         return new BootResponse(
                 Instant.now(clock),
                 intervals.calculateInterval(boot)
@@ -25,6 +28,7 @@ public class CommunicationService {
     }
 
     public void handleStatus(DeviceStatuses status) {
+        publisher.publishEvent(status);
     }
 
     public record BootResponse(Instant serverTime, Duration interval) {

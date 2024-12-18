@@ -47,7 +47,7 @@ class DeviceDocumentWithHistoryRepository implements DeviceRepository {
                 new DeviceEventEntity(device.deviceId, event)
         ));
         if (!emitted.isEmpty()) {
-            //publisher.publishEvent(device.toDeviceConfiguration());
+            publisher.publishEvent(device.toDeviceConfiguration());
         }
         emitted.forEach(publisher::publishEvent);
     }
