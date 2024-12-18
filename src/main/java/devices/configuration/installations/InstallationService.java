@@ -17,6 +17,7 @@ import java.util.Optional;
 public class InstallationService {
 
     private final InstallationRepository repository;
+    private final Devices devices;
 
     @EventListener
     public void handleWorkOrder(WorkOrder order) {
@@ -56,7 +57,11 @@ public class InstallationService {
         CompletionResult finalization = process.complete();
         repository.save(process);
         if (finalization.isConfirmed()) {
-            //devices.create
+            devices.create(
+                    process.deviceId,
+                    finalization.ownership(),
+                    finalization.location()
+            );
         }
         return finalization;
     }

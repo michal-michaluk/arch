@@ -2,6 +2,7 @@ package devices.configuration.communication.protocols.iot16;
 
 import devices.configuration.communication.CommunicationFixture;
 import devices.configuration.communication.CommunicationService;
+import devices.configuration.communication.KnownDevices;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,7 +35,7 @@ class IoT16ControllerTest {
                 .thenReturn(new CommunicationService.BootResponse(
                         Instant.parse("2023-06-28T06:15:30.00Z"),
                         Duration.ofSeconds(69),
-                        CommunicationService.State.EXISTING
+                        KnownDevices.State.EXISTING
                 ));
 
         rest.perform(post("/protocols/iot16/bootnotification/{deviceId}", "device-id")

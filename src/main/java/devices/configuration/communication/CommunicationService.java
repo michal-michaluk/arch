@@ -1,6 +1,6 @@
 package devices.configuration.communication;
 
-import devices.configuration.intervals.IntervalsService;
+
 import lombok.AllArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
@@ -16,25 +16,25 @@ import java.util.function.Function;
 @AllArgsConstructor
 public class CommunicationService {
     private final Clock clock;
-    private final IntervalsService intervals;
+    private final HeartbeatInterval intervals;
+    private final KnownDevices devices;
     private final ApplicationEventPublisher publisher;
 
     public BootResponse handleBoot(BootNotification boot) {
-        publisher.publishEvent(boot);
-        return new BootResponse(
+        BootResponse response = new BootResponse(
                 Instant.now(clock),
-                intervals.calculateInterval(boot),
-                State.EXISTING
+                intervals.heartbeatIntervalFor(boot),
+                devices.queryDevice(boot.deviceId())
         );
+        publisher.publishEvent(boot);
+        return response;
     }
 
     public void handleStatus(DeviceStatuses status) {
         publisher.publishEvent(status);
     }
 
-    public enum State {UNKNOWN, IN_INSTALLATION, EXISTING}
-
-    public record BootResponse(Instant serverTime, Duration interval, State state) {
+    public record BootResponse(Instant serverTime, Duration interval, KnownDevices.State state) {
 
         public <T> T map(Function<BootResponse, T> func) {
             return func.apply(this);
@@ -44,7 +44,7 @@ public class CommunicationService {
             return (int) interval.getSeconds();
         }
 
-        public <T> T state(Function<State, T> func) {
+        public <T> T state(Function<KnownDevices.State, T> func) {
             return func.apply(state);
         }
     }
