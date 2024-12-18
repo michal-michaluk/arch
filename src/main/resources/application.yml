@@ -12,9 +12,33 @@ spring:
     open-in-view: false
   liquibase:
     change-log: classpath:db/db.changelog.yaml
-  kafka.consumer:
-    group-id: devices-configuration-default
-    auto-offset-reset: earliest
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
+    security:
+      protocol: SASL_SSL
+    properties:
+      ssl.endpoint.identification.algorithm: https
+    jaas:
+      enabled: true
+      control-flag: required
+      login-module: org.apache.kafka.common.security.scram.ScramLoginModule
+      options:
+        username: ${KAFKA_JAAS_USERNAME}
+        password: ${KAFKA_JAAS_PASSWORD}
+    consumer:
+      group-id: devices-configuration-default
+      auto-offset-reset: earliest
+      ssl:
+        trust-store-location: ${KAFKA_SSL_TRUST_STORE_LOCATION}
+        trust-store-password: ${KAFKA_SSL_TRUST_STORE_PASSWORD}
+      properties:
+        sasl.mechanism: SCRAM-SHA-512
+    producer:
+      ssl:
+        trust-store-location: ${KAFKA_SSL_TRUST_STORE_LOCATION}
+        trust-store-password: ${KAFKA_SSL_TRUST_STORE_PASSWORD}
+      properties:
+        sasl.mechanism: SCRAM-SHA-512
   security:
     oauth2:
       resourceserver:
