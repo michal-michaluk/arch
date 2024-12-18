@@ -33,7 +33,8 @@ class IoT16ControllerTest {
         Mockito.when(service.handleBoot(any()))
                 .thenReturn(new CommunicationService.BootResponse(
                         Instant.parse("2023-06-28T06:15:30.00Z"),
-                        Duration.ofSeconds(69)
+                        Duration.ofSeconds(69),
+                        CommunicationService.State.EXISTING
                 ));
 
         rest.perform(post("/protocols/iot16/bootnotification/{deviceId}", "device-id")

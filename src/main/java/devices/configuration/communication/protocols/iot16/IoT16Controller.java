@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import static devices.configuration.communication.protocols.iot16.BootNotificationResponse.Status.Accepted;
+import static devices.configuration.communication.protocols.iot16.BootNotificationResponse.Status.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -23,16 +23,13 @@ class IoT16Controller {
                 .map(resp -> BootNotificationResponse.builder()
                         .currentTime(resp.serverTime().toString())
                         .interval(resp.intervalInSeconds())
-                        .status(Accepted)
-                        .build()
+                        .status(resp.state(state -> switch (state) {
+                                    case UNKNOWN -> Rejected;
+                                    case IN_INSTALLATION -> Pending;
+                                    case EXISTING -> Accepted;
+                                })
+                        ).build()
                 );
-    }
-
-    @PostMapping(path = "/protocols/iot16/statusnotification/{deviceId}",
-            consumes = "application/json", produces = "application/json")
-    void handleStatusNotification(@PathVariable String deviceId,
-                                  @RequestBody StatusNotificationRequest request) {
-        service.handleStatus(request.toStatusNotificationEvent(deviceId));
     }
 
 }

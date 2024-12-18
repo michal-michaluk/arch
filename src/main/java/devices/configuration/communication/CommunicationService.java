@@ -23,7 +23,8 @@ public class CommunicationService {
         publisher.publishEvent(boot);
         return new BootResponse(
                 Instant.now(clock),
-                intervals.calculateInterval(boot)
+                intervals.calculateInterval(boot),
+                State.EXISTING
         );
     }
 
@@ -31,7 +32,9 @@ public class CommunicationService {
         publisher.publishEvent(status);
     }
 
-    public record BootResponse(Instant serverTime, Duration interval) {
+    public enum State {UNKNOWN, IN_INSTALLATION, EXISTING}
+
+    public record BootResponse(Instant serverTime, Duration interval, State state) {
 
         public <T> T map(Function<BootResponse, T> func) {
             return func.apply(this);
@@ -39,6 +42,10 @@ public class CommunicationService {
 
         public int intervalInSeconds() {
             return (int) interval.getSeconds();
+        }
+
+        public <T> T state(Function<State, T> func) {
+            return func.apply(state);
         }
     }
 }

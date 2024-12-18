@@ -66,7 +66,8 @@ public class JsonConfiguration implements ObjectMapperSupplier {
         DeserializationConfig config = OBJECT_MAPPER.getDeserializationConfig();
         AnnotationIntrospector ai = config.getAnnotationIntrospector();
         Map<Class<?>, EventTypes.Type> subtypes = Stream.of(
-                        devices.configuration.device.DomainEvent.class
+                        devices.configuration.device.DomainEvent.class,
+                        devices.configuration.installations.DomainEvent.class
                 )
                 .map(type -> AnnotatedClassResolver.resolve(config, OBJECT_MAPPER.constructType(type), config))
                 .map(ai::findSubtypes)
