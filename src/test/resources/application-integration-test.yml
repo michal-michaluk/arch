@@ -9,3 +9,6 @@ spring:
     database: postgresql
   liquibase:
     dropFirst: true
+  kafka:
+    security:
+      protocol: PLAINTEXT

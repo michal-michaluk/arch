@@ -1,23 +1,25 @@
 package devices.configuration.communication;
 
-import devices.configuration.device.DeviceConfiguration;
-import devices.configuration.installations.DomainEvent.DeviceAssigned;
-import devices.configuration.installations.DomainEvent.InstallationCompleted;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import devices.configuration.device.Ownership;
+import devices.configuration.tools.JsonConfiguration;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
-import org.springframework.context.annotation.Primary;
-import org.springframework.context.event.EventListener;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
+
 import static jakarta.persistence.EnumType.STRING;
 
-@Primary
 @Component
 @Transactional
 @AllArgsConstructor
@@ -32,20 +34,30 @@ class KnownDevicesReadModel implements KnownDevices {
                 .orElse(State.UNKNOWN);
     }
 
-    @EventListener
-    public void projectionOfDeviceInstallation(DeviceAssigned event) {
-        put(event.deviceId(), State.IN_INSTALLATION);
+    @KafkaListener(topics = "installations-events")
+    void listenInstallationsMessages(ConsumerRecord<String, String> message) {
+        try {
+            switch (JsonConfiguration.parse(message.value(), InstallationMessage.class)) {
+                case InstallationMessage.DeviceAssignedMessageV1 started ->
+                        put(started.deviceId(), State.IN_INSTALLATION);
+                case InstallationMessage.InstallationCompletedMessageV1 ended -> put(ended.deviceId(), State.EXISTING);
+                case InstallationMessage.NotInterested ignored -> {
+                }
+            }
+        } catch (Exception e) {
+            // DLC
+        }
     }
 
-    @EventListener
-    public void projectionOfInstallationCompleted(InstallationCompleted event) {
-        put(event.deviceId(), State.EXISTING);
-    }
-
-    @EventListener
-    public void projectionOfDeInstallation(DeviceConfiguration event) {
-        if (event.ownership().isUnowned()) {
-            put(event.deviceId(), State.UNKNOWN);
+    @KafkaListener(topics = "device-configuration")
+    void listenDeviceConfigurationMessages(ConsumerRecord<String, String> message) {
+        try {
+            DeviceConfigurationMessageV1 reconfigured = JsonConfiguration.parse(message.value(), DeviceConfigurationMessageV1.class);
+            if (reconfigured.isUnowned()) {
+                put(reconfigured.deviceId(), State.UNKNOWN);
+            }
+        } catch (Exception e) {
+            // DLC
         }
     }
 
@@ -68,17 +80,44 @@ class KnownDevicesReadModel implements KnownDevices {
         @Enumerated(STRING)
         private State state;
 
-        public KnownDeviceEntity(String deviceId) {
+        KnownDeviceEntity(String deviceId) {
             this.deviceId = deviceId;
         }
 
-        public State state() {
+        State state() {
             return this.state;
         }
 
-        public KnownDeviceEntity state(State state) {
+        KnownDeviceEntity state(State state) {
             this.state = state;
             return this;
+        }
+    }
+
+    @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, defaultImpl = InstallationMessage.NotInterested.class, property = "type")
+    @JsonSubTypes({
+            @JsonSubTypes.Type(value = InstallationMessage.DeviceAssignedMessageV1.class, name = "DeviceAssigned-v1"),
+            @JsonSubTypes.Type(value = InstallationMessage.InstallationCompletedMessageV1.class, name = "InstallationCompleted-v1"),
+    })
+    sealed interface InstallationMessage {
+        record DeviceAssignedMessageV1(String deviceId) implements InstallationMessage {}
+
+        record InstallationCompletedMessageV1(String deviceId) implements InstallationMessage {}
+
+        record NotInterested() implements InstallationMessage {}
+    }
+
+    record DeviceConfigurationMessageV1(String deviceId, OwnershipV1 ownership) {
+        boolean isUnowned() {
+            return Optional.ofNullable(ownership)
+                    .map(o -> o.toOwnership().isUnowned())
+                    .orElse(true);
+        }
+
+        record OwnershipV1(String operator, String provider) {
+            Ownership toOwnership() {
+                return new Ownership(operator, provider);
+            }
         }
     }
 }
